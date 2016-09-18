@@ -48,11 +48,10 @@ class PFloatingButton: UIButton {
         return self
     }
 
-    func initInKeyWindowWithFrame(frame: CGRect) -> AnyObject {
+    func initInKeyWindowWithFrame(frame: CGRect) {
         self.frame = frame
-        self.performSelector(#selector(addButtonToKeyWindow), withObject: nil, afterDelay: 0)
+        self.perform(#selector(addButtonToKeyWindow), with: nil, afterDelay: 0)
         defaultSetting()
-        return self
     }
 
     required internal init?(coder aDecoder: NSCoder) {
@@ -64,20 +63,20 @@ class PFloatingButton: UIButton {
         autoDocking = true
         _singleTapBeenCanceled = false
 
-        _longPressGestureRecognizer.addTarget(self, action: #selector(PFloatingButton.gestureRecognizerHandle(_:)))
+        _longPressGestureRecognizer.addTarget(self, action: #selector(self.gestureRecognizerHandle(gestureRecognizer:)))
         _longPressGestureRecognizer.allowableMovement = 0
         self.addGestureRecognizer(_longPressGestureRecognizer)
     }
 
     func addButtonToKeyWindow()
     {
-        UIApplication.sharedApplication().keyWindow?.addSubview(self)
+        UIApplication.shared.keyWindow?.addSubview(self)
     }
 
     func gestureRecognizerHandle(gestureRecognizer:UILongPressGestureRecognizer) {
         switch gestureRecognizer.state
         {
-        case .Began:
+        case .began:
             if longPressBlock != nil {
                 longPressBlock!(self)
             }
@@ -87,11 +86,11 @@ class PFloatingButton: UIButton {
         }
     }
 
-    func setTapBlocks(tapBlocks: (PFloatingButton) -> Void) {
+    func setTapBlocks(tapBlocks: @escaping (PFloatingButton) -> Void) {
         tapBlock = tapBlocks
         if tapBlock != nil
         {
-            self.addTarget(self, action: #selector(buttonTouched), forControlEvents: .TouchUpInside)
+            self.addTarget(self, action: #selector(buttonTouched), for: .touchUpInside)
         }
 
     }
@@ -99,11 +98,11 @@ class PFloatingButton: UIButton {
     func buttonTouched()
     {
         if doubleTapBlock != nil {
-            self.performSelector(#selector(executeButtonTouchedBlock), withObject: nil, afterDelay:0.36)
+            self.perform(#selector(executeButtonTouchedBlock), with: nil, afterDelay:0.36)
         }
         else
         {
-            self.performSelector(#selector(executeButtonTouchedBlock), withObject: nil, afterDelay:0)
+            self.perform(#selector(executeButtonTouchedBlock), with: nil, afterDelay:0)
         }
     }
 
@@ -114,9 +113,10 @@ class PFloatingButton: UIButton {
         }
     }
 
-    internal override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
         _isDragging = false
-        super.touchesBegan(touches, withEvent: event)
+        super.touchesBegan(touches, with: event)
         let touch:UITouch = touches.first!
         if touch.tapCount == 2
         {
@@ -128,18 +128,19 @@ class PFloatingButton: UIButton {
             {
                 _singleTapBeenCanceled = false
             }
-            _beginLocation = touch.locationInView(self)
+            _beginLocation = touch.location(in: self)
         }
+
     }
 
-    internal override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if draggable {
             _isDragging = true
             let touch:UITouch = touches.first!
-            let currentLocation:CGPoint = touch.locationInView(self)
+            let currentLocation:CGPoint = touch.location(in: self)
             let offsetX = currentLocation.x - _beginLocation.x
             let offsetY = currentLocation.y - _beginLocation.y
-            self.center = CGPointMake(self.center.x + offsetX, self.center.y + offsetY)
+            self.center = CGPoint.init(x: self.center.x + offsetX, y: self.center.y + offsetY)
             let superviewFrame:CGRect = (self.superview?.frame)!
             let frame:CGRect = self.frame
             let leftLimitX:CGFloat = frame.size.width/2
@@ -149,18 +150,18 @@ class PFloatingButton: UIButton {
 
             if (self.center.x > rightLimitX)
             {
-                self.center = CGPointMake(rightLimitX, self.center.y)
+                self.center = CGPoint.init(x: rightLimitX, y: self.center.y)
             }
             else if (self.center.x <= leftLimitX) {
-                self.center = CGPointMake(leftLimitX, self.center.y)
+                self.center = CGPoint.init(x: leftLimitX, y: self.center.y)
             }
             if (self.center.y > bottomLimitY)
             {
-                self.center = CGPointMake(self.center.x, bottomLimitY)
+                self.center = CGPoint.init(x: self.center.x, y: bottomLimitY)
             }
             else if (self.center.y <= topLimitY)
             {
-                self.center = CGPointMake(self.center.x, topLimitY)
+                self.center = CGPoint.init(x: self.center.x, y: topLimitY)
             }
             if draggingBlock != nil {
                 draggingBlock!(self)
@@ -168,8 +169,8 @@ class PFloatingButton: UIButton {
         }
     }
 
-    internal override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        super.touchesEnded(touches, withEvent: event)
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
         if (_isDragging && dragDoneBlock != nil) {
             dragDoneBlock!(self);
             _singleTapBeenCanceled = true;
@@ -181,8 +182,8 @@ class PFloatingButton: UIButton {
             let middleX = superviewFrame.size.width/2
 
             if (self.center.x >= middleX) {
-                UIView.animateWithDuration(0.2, animations: { 
-                    self.center = CGPointMake(superviewFrame.size.width - frame.size.width / 2, self.center.y)
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.center = CGPoint.init(x: superviewFrame.size.width - frame.size.width / 2, y: self.center.y)
                     if self.autoDockingBlock != nil {
                         self.autoDockingBlock!(self)
                     }
@@ -194,8 +195,8 @@ class PFloatingButton: UIButton {
             }
             else
             {
-                UIView.animateWithDuration(0.2, animations: {
-                    self.center = CGPointMake(frame.size.width / 2, self.center.y)
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.center = CGPoint.init(x: frame.size.width / 2, y: self.center.y)
                     if self.autoDockingBlock != nil {
                         self.autoDockingBlock!(self)
                     }
@@ -209,9 +210,9 @@ class PFloatingButton: UIButton {
         _isDragging = false
     }
 
-    internal override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         _isDragging = false
-        super.touchesCancelled(touches, withEvent: event)
+        super.touchesCancelled(touches, with: event)
     }
 
     func isDragging()->Bool
@@ -221,13 +222,14 @@ class PFloatingButton: UIButton {
 
     func version()->NSString
     {
-        return "0.2"
+        return "0.1"
     }
 
     func removeAllFromKeyWindow()
     {
-        for view:AnyObject in (UIApplication.sharedApplication().keyWindow?.subviews)! {
-            if view.isKindOfClass(PFloatingButton) {
+        for view:UIView in (UIApplication.shared.keyWindow?.subviews)!
+        {
+            if view.isKind(of: type(of: PFloatingButton())) {
                 view.removeFromSuperview()
             }
         }
@@ -235,8 +237,9 @@ class PFloatingButton: UIButton {
 
     func removeAllFromView(superView:AnyObject)
     {
-        for view:AnyObject in superView.subviews {
-            if view.isKindOfClass(PFloatingButton) {
+        for view:UIView in superView.subviews {
+            if view.isKind(of: type(of: PFloatingButton()))
+            {
                 view.removeFromSuperview()
             }
         }

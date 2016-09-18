@@ -15,8 +15,8 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
 
         let bbbbbbbbbbb = PFloatingButton()
-        bbbbbbbbbbb.initInKeyWindowWithFrame(CGRectMake(0, 100, 100, 100))
-        bbbbbbbbbbb.backgroundColor = UIColor.redColor()
+        bbbbbbbbbbb.initInKeyWindowWithFrame(frame: CGRect.init(x: 0, y: 100, width: 100, height: 100))
+        bbbbbbbbbbb.backgroundColor = UIColor.red
         self.view.addSubview(bbbbbbbbbbb)
 
         print(bbbbbbbbbbb.version())
